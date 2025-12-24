@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import AxiosClient from "../axios-client";
+import { data } from "react-router-dom";
 
 const stateContext = createContext({
   user: null,
@@ -22,6 +24,19 @@ export const ContextProvider = ({ children }) => {
       _setToken(null);
     }
   };
+
+  useEffect(() => {
+    if (token) {
+      AxiosClient.get("/user")
+        .then(({ data }) => {
+          setUser(data);
+        })
+        .catch(() => {
+          setUser({});
+          setToken(null);
+        });
+    }
+  }, [token]);
   return (
     <stateContext.Provider value={{ user, token, setToken, setUser }}>
       {children}
