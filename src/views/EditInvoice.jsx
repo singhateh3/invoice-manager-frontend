@@ -1,41 +1,67 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AxiosClient from "../axios-client";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import Spinner from "../components/Spinner";
 
-const CreateInvoice = () => {
-  // header refs
-  const companyNameRef = useRef();
-  const companyAddressRef = useRef();
-  const customerNameRef = useRef();
-  const customerAddressRef = useRef();
-  const invoiceDateRef = useRef();
-  const dueDateRef = useRef();
-  const noteRef = useRef();
-  const termsRef = useRef();
-
-  // invoice items
-  const [items, setItems] = useState([
-    { item: "", description: "", quantity: 1, price: 0 },
-  ]);
-
-  const [taxRate, setTaxRate] = useState(0);
-  const [discountRate, setDiscountRate] = useState(0);
+const EditInvoice = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
 
-  // item handlers
+  const [invoice, setInvoice] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Form state
+  const [companyName, setCompanyName] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [items, setItems] = useState([]);
+  const [taxRate, setTaxRate] = useState(0);
+  const [discountRate, setDiscountRate] = useState(0);
+  const [terms, setTerms] = useState("");
+  const [note, setNote] = useState("");
+
+  // Fetch invoice data
+  useEffect(() => {
+    AxiosClient.get(`invoice/${id}`)
+      .then(({ data }) => {
+        const inv = data.invoice;
+        setInvoice(inv);
+        setCompanyName(inv.company_name);
+        setCompanyAddress(inv.company_address);
+        setCustomerName(inv.customer_name);
+        setCustomerAddress(inv.customer_address);
+        setInvoiceDate(inv.invoice_date?.split("T")[0] || "");
+        setDueDate(inv.due_date?.split("T")[0] || "");
+        setNote(inv.note);
+        setTerms(inv.terms);
+        setItems(
+          inv.items.map((item) => ({
+            ...item,
+            quantity: Number(item.quantity),
+            price: Number(item.price),
+          }))
+        );
+        setTaxRate(Number(inv.tax_rate) || 0);
+        setDiscountRate(Number(inv.discount_rate) || 0);
+        console.log(taxRate);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  // Item handlers
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
-    // check if the quantity and price are strings, if the are, change them to number else leave them like they are
     newItems[index][field] =
-      field === "quantity" || field === "price" ? +value : value;
+      field === "quantity" || field === "price" ? Number(value) : value;
     setItems(newItems);
   };
+
   const addItem = () => {
-    console.log("Before:", items);
-    setItems((prev) => [
-      ...prev,
-      { item: "", description: "", quantity: 1, price: 0 },
-    ]);
+    setItems([...items, { item: "", description: "", quantity: 1, price: 0 }]);
   };
 
   const removeItem = (index) => {
@@ -43,54 +69,41 @@ const CreateInvoice = () => {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  // Calculate frontend UX
+  // Totals calculation
   const subTotal = items.reduce(
     (sum, item) => sum + item.quantity * item.price,
     0
   );
-
   const tax = subTotal * (taxRate / 100);
   const discount = subTotal * (discountRate / 100);
   const total = subTotal - discount + tax;
 
-  // Onsubmit
-
-  const onSubmit = (e) => {
+  // Submit
+  const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
-      company_name: companyNameRef.current.value,
-      company_address: companyAddressRef.current.value,
-      customer_name: customerNameRef.current.value,
-      customer_address: customerAddressRef.current.value,
-      invoice_date: invoiceDateRef.current.value,
-      due_date: dueDateRef.current.value,
-      tax_rate: Number(taxRate),
-      discount_rate: Number(discountRate),
-      note: noteRef.current.value,
-      terms: termsRef.current.value,
-
+      company_name: companyName,
+      company_address: companyAddress,
+      customer_name: customerName,
+      customer_address: customerAddress,
+      invoice_date: invoiceDate,
+      due_date: dueDate,
+      tax_rate: taxRate,
+      discount_rate: discountRate,
+      terms: terms,
+      notes: note,
       items,
     };
 
-    AxiosClient.post("/invoice", payload)
-      .then(({ data }) => {
-        console.log(data);
-        const invoiceId = data.invoice.id;
-        navigate(`/invoice/${invoiceId}`);
-      })
-
-      .catch((err) => {
-        if (err.response) {
-          console.error("Validation errors:", err.response.data.errors);
-        } else {
-          console.log("STATUS:", err.response?.status);
-          console.log("DATA:", err.response?.data);
-          console.log("ERRORS:", err.response?.data?.errors);
-        }
-      });
+    AxiosClient.patch(`/invoice/${id}`, payload)
+      .then(() => navigate(`/invoice/${id}`))
+      .catch((err) => console.error(err));
   };
+
+  if (loading) return <Spinner />;
+
   return (
-    <form onSubmit={onSubmit} className="min-h-screen bg-gray-100 py-10">
+    <form onSubmit={handleSubmit} className="min-h-screen bg-gray-100 py-10">
       {/* Paper */}
       <div className="max-w-5xl mx-auto bg-white border shadow-sm">
         {/* Header Bar */}
@@ -106,15 +119,14 @@ const CreateInvoice = () => {
               className="input border-gray-300 border-2 w-full"
               placeholder=""
               type="date"
-              value={new Date().toISOString().split("T")[0]}
-              ref={invoiceDateRef}
+              value={invoiceDate}
             />
           </div>
 
           <div className="flex items-center gap-4 px-2">
             <label className="block font-semibold w-32">Due Date</label>
             <input
-              ref={dueDateRef}
+              value={dueDate}
               type="date"
               className="input border-gray-300 border-2 w-full"
             />
@@ -129,7 +141,7 @@ const CreateInvoice = () => {
             <div className="flex items-center gap-4 px-2">
               <p className="w-40 text-sm font-medium">Company Name:</p>
               <input
-                ref={companyNameRef}
+                value={companyName}
                 name="name"
                 placeholder="Your Name"
                 className="input mb-2 border-gray-300 border-2 w-full px-1"
@@ -138,7 +150,7 @@ const CreateInvoice = () => {
             <div className="flex items-center gap-4 px-2">
               <p className="w-40 text-sm font-medium">Your Company:</p>
               <input
-                ref={companyAddressRef}
+                value={companyAddress}
                 type="text"
                 name="address"
                 placeholder=" Company Address"
@@ -163,7 +175,7 @@ const CreateInvoice = () => {
             <div className="flex items-center gap-4 px-2">
               <p className="w-36 text-sm font-medium">Client Name:</p>
               <input
-                ref={customerNameRef}
+                value={customerName}
                 placeholder="Your Name"
                 className="input mb-2 border-gray-300 border-2 w-full px-1"
               />
@@ -171,8 +183,8 @@ const CreateInvoice = () => {
             <div className="flex items-center gap-4 px-2">
               <p className="w-36 text-sm font-medium">Client Address:</p>
               <input
-                ref={customerAddressRef}
-                placeholder="Your Company"
+                value={customerAddress}
+                placeholder="client address"
                 className="input mb-2 border-gray-300 border-2 w-full px-1"
               />
             </div>
@@ -196,7 +208,7 @@ const CreateInvoice = () => {
                 <th className="p-2 w-20">QUANTITY</th>
                 <th className="p-2 w-28">UNIT PRICE</th>
                 <th className="p-2 w-28">AMOUNT</th>
-                <th>#</th>
+                <th className="p-2 text-center">ACTION</th>
               </tr>
             </thead>
             <tbody>
@@ -204,6 +216,7 @@ const CreateInvoice = () => {
                 <tr key={index} className="border-t">
                   <td className="p-2">
                     <input
+                      value={item.item}
                       className="table-input"
                       placeholder="Item "
                       onChange={(e) =>
@@ -213,9 +226,10 @@ const CreateInvoice = () => {
                   </td>
                   <td className="p-2">
                     <input
+                      value={item.description}
                       className="table-input"
                       name="description"
-                      placeholder="description "
+                      placeholder="description"
                       onChange={(e) =>
                         handleItemChange(index, "description", e.target.value)
                       }
@@ -223,6 +237,7 @@ const CreateInvoice = () => {
                   </td>
                   <td className="p-2">
                     <input
+                      value={item.quantity}
                       type="number"
                       name="quantity"
                       className="table-input text-center"
@@ -233,6 +248,7 @@ const CreateInvoice = () => {
                   </td>
                   <td className="p-2">
                     <input
+                      value={item.price}
                       type="number"
                       className="table-input text-center"
                       onChange={(e) =>
@@ -271,7 +287,7 @@ const CreateInvoice = () => {
           <div className="border-2">
             <h3 className="font-semibold mb-1 bg-gray-100">Notes</h3>
             <textarea
-              ref={noteRef}
+              value={note}
               name="note"
               max={100}
               placeholder="Additional notes here..."
@@ -289,11 +305,12 @@ const CreateInvoice = () => {
               <span className=" font-bold">
                 Discount:{" "}
                 <input
+                  value={discountRate}
                   type="number"
                   max={100}
                   min={0}
                   className="border-2"
-                  onChange={(e) => setDiscountRate(e.target.value)}
+                  onChange={Number((e) => setDiscountRate(e.target.value))}
                 />
               </span>
               <span>${discount.toFixed(2)}</span>
@@ -302,11 +319,12 @@ const CreateInvoice = () => {
               <span className="">
                 Tax:{" "}
                 <input
+                  value={taxRate}
                   type="number"
                   max={100}
                   min={0}
                   className="border-2"
-                  onChange={(e) => setTaxRate(e.target.value)}
+                  onChange={(e) => Number(setTaxRate(e.target.value))}
                 />
               </span>
               <span>${tax.toFixed(2)}</span>
@@ -322,7 +340,7 @@ const CreateInvoice = () => {
         <div className="px-6 py-4">
           <h3 className="font-semibold mb-1 bg-gray-100">Terms & Conditions</h3>
           <textarea
-            ref={termsRef}
+            value={terms}
             name="terms"
             max={150}
             placeholder="Terms and conditions here..."
@@ -339,11 +357,12 @@ const CreateInvoice = () => {
             type="submit"
             className="bg-blue-700 text-white px-6 py-2 rounded"
           >
-            Send Invoice
+            Update Invoice
           </button>
         </div>
       </div>
     </form>
   );
 };
-export default CreateInvoice;
+
+export default EditInvoice;

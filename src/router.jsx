@@ -9,6 +9,7 @@ import NotFound from "./views/NotFound";
 import CreateInvoice from "./views/CreateInvoice";
 import ShowInvoice from "./views/ShowInvoice";
 import Invoices from "./views/Invoices";
+import EditInvoice from "./views/EditInvoice";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,8 @@ const router = createBrowserRouter([
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/new-invoice", element: <CreateInvoice /> },
       { path: "/invoice/:id", element: <ShowInvoice /> },
+      { path: "/invoice/:id/edit", element: <EditInvoice /> },
+
       { path: "/invoices", element: <Invoices /> },
     ],
   },

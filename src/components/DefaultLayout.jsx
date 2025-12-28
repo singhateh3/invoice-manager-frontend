@@ -10,7 +10,7 @@ const DefaultLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) navigate("/login");
 
   const handleLogout = async () => {
     try {
@@ -32,7 +32,7 @@ const DefaultLayout = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar for large screens */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white shadow-md p-6 space-y-6 fixed h-screen">
+      <aside className="hidden lg:flex flex-col w-64 bg-white shadow-md p-6 space-y-6  h-screen">
         <div className="text-2xl font-bold text-blue-600">My Admin</div>
         <nav className="flex flex-col space-y-3 mt-6">
           {menuItems.map((item) => (
@@ -81,7 +81,7 @@ const DefaultLayout = () => {
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 flex flex-col lg:ml-">
         {/* Header */}
         <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
