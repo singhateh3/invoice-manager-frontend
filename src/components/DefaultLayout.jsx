@@ -32,14 +32,14 @@ const DefaultLayout = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar for large screens */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white shadow-md p-6 space-y-6  h-screen">
+      <aside className="hidden lg:flex flex-col w-64 bg-white shadow-md p-6 space-y-6 h-screen">
         <div className="text-2xl font-bold text-blue-600">My Admin</div>
         <nav className="flex flex-col space-y-3 mt-6">
           {menuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className="px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 font-medium transition-all"
+              className="px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 font-medium transition-all active:bg-blue-50"
             >
               {item.name}
             </Link>

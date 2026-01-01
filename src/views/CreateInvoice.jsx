@@ -332,14 +332,14 @@ const CreateInvoice = () => {
 
         {/* Actions */}
         <div className="flex justify-end gap-4 px-6 py-4 border-t">
-          <button type="button" className="border px-6 py-2 rounded">
+          {/* <button type="button" className="border px-6 py-2 rounded">
             Save Draft
-          </button>
+          </button> */}
           <button
             type="submit"
             className="bg-blue-700 text-white px-6 py-2 rounded"
           >
-            Send Invoice
+            Save Invoice
           </button>
         </div>
       </div>
