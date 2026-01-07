@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { data, Link, Outlet, useNavigate } from "react-router-dom";
 import { useStateContext } from "../context/contextProvider";
 import AxiosClient from "../axios-client";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
@@ -9,6 +9,7 @@ const DefaultLayout = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const isAdmin = user?.roles?.includes("admin");
 
   if (!token) navigate("/login");
 
@@ -25,15 +26,16 @@ const DefaultLayout = () => {
 
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Users", path: "/users" },
     { name: "Invoices", path: "/invoices" },
+
+    ...(isAdmin ? [{ name: "Users", path: "/users" }] : []),
   ];
 
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar for large screens */}
       <aside className="hidden lg:flex flex-col w-64 bg-white shadow-md p-6 space-y-6 h-screen">
-        <div className="text-2xl font-bold text-blue-600">My Admin</div>
+        <div className="text-2xl font-bold text-blue-600">My Logo</div>
         <nav className="flex flex-col space-y-3 mt-6">
           {menuItems.map((item) => (
             <Link
@@ -61,9 +63,7 @@ const DefaultLayout = () => {
             >
               ✕
             </button>
-            <div className="text-2xl font-bold text-blue-600 mb-6">
-              My Admin
-            </div>
+            <div className="text-2xl font-bold text-blue-600 mb-6">My Logo</div>
             <nav className="flex flex-col space-y-3">
               {menuItems.map((item) => (
                 <Link
@@ -92,7 +92,7 @@ const DefaultLayout = () => {
             >
               <HiOutlineMenuAlt3 />
             </button>
-            <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+            <h1 className="text-xl font-semibold"> Invoice Manager</h1>
           </div>
 
           <div className="flex items-center space-x-4">

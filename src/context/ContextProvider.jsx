@@ -27,7 +27,7 @@ export const ContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      AxiosClient.get("/user")
+      AxiosClient.get("/me")
         .then(({ data }) => {
           setUser(data);
         })

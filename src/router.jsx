@@ -4,13 +4,15 @@ import Login from "./views/Login";
 import Signup from "./views/Signup";
 import DefaultLayout from "./components/DefaultLayout";
 import Dashboard from "./views/Dashboard";
-import Users from "./views/users";
+import Users from "./views/Users";
 import NotFound from "./views/NotFound";
 import CreateInvoice from "./views/CreateInvoice";
 import ShowInvoice from "./views/ShowInvoice";
 import Invoices from "./views/Invoices";
 import EditInvoice from "./views/EditInvoice";
 import AddUser from "./views/AddUser";
+import ShowUser from "./views/ShowUser";
+import EditUser from "./views/EditUser";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +30,8 @@ const router = createBrowserRouter([
       { path: "/invoice/:id/edit", element: <EditInvoice /> },
       { path: "/invoices", element: <Invoices /> },
       { path: "/add-user", element: <AddUser /> },
+      { path: "/users/:id", element: <ShowUser /> },
+      { path: "users/:id/edit", element: <EditUser /> },
     ],
   },
   {
