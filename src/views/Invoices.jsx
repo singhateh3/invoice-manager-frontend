@@ -3,6 +3,7 @@ import AxiosClient from "../axios-client";
 import { Link } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import Pagination from "../components/Pagination";
+import StatusDropdown from "../components/StatusDropdown";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -22,8 +23,9 @@ const Invoices = () => {
       });
   };
 
-  useEffect(() => {
-    // setLoading(true);
+  const fetchInvoices = () => {
+    setLoading(true);
+
     AxiosClient.get(`/invoice?page=${currentPage}`)
       .then(({ data }) => {
         const invoicesPagination = data.invoices;
@@ -36,6 +38,10 @@ const Invoices = () => {
         console.error(err);
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchInvoices();
   }, [currentPage]);
 
   if (loading) {
@@ -64,32 +70,32 @@ const Invoices = () => {
 
         {/* Empty State */}
         {invoices.length === 0 ? (
-          <div className="bg-white p-10 rounded-xl shadow text-center">
-            <div className="text-4xl mb-3">📄</div>
-            <h2 className="text-lg font-semibold text-gray-700">
+          <div className="bg-white p-12 rounded-2xl shadow-lg text-center">
+            <div className="text-5xl mb-4">📄</div>
+            <h2 className="text-2xl font-bold text-gray-800">
               No invoices yet
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-gray-500 mt-2">
               Create your first invoice to get started
             </p>
 
             <Link
               to="/new-invoice"
-              className="inline-block mt-5 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition"
+              className="inline-block mt-6 bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-shadow shadow-sm"
             >
-              Create Invoice
+              + Create Invoice
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow overflow-hidden">
-            {/* Table */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+              <table className="w-full text-sm border-separate border-spacing-y-2">
+                <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
                   <tr>
                     <th className="p-4 text-left">Invoice #</th>
                     <th className="p-4 text-left">Customer</th>
-                    <th className="p-4 text-right">Total</th>
+                    <th className="p-4 text-center">Total</th>
+                    <th className="p-4 text-center">Status</th>
                     <th className="p-4 text-center">Actions</th>
                   </tr>
                 </thead>
@@ -98,7 +104,7 @@ const Invoices = () => {
                   {invoices.map((invoice) => (
                     <tr
                       key={invoice.id}
-                      className="border-t hover:bg-gray-50 transition"
+                      className="bg-white border-b hover:bg-gray-50 transition"
                     >
                       <td className="p-4 font-medium text-gray-800">
                         {invoice.invoice_no}
@@ -108,8 +114,16 @@ const Invoices = () => {
                         {invoice.customer_name}
                       </td>
 
-                      <td className="p-4 text-right font-semibold text-gray-800">
+                      <td className="p-4 text-center font-semibold text-gray-800">
                         ${Number(invoice.total).toFixed(2)}
+                      </td>
+
+                      <td className="p-4 text-center">
+                        {/* Status Dropdown with badge style */}
+                        <StatusDropdown
+                          invoice={invoice}
+                          refreshInvoices={fetchInvoices}
+                        />
                       </td>
 
                       <td className="p-4">

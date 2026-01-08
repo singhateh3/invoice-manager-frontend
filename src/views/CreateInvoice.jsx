@@ -17,7 +17,7 @@ const CreateInvoice = () => {
   const [items, setItems] = useState([
     { item: "", description: "", quantity: 1, price: 0 },
   ]);
-
+  const [errors, setErrors] = useState(null);
   const [taxRate, setTaxRate] = useState(0);
   const [discountRate, setDiscountRate] = useState(0);
   const navigate = useNavigate();
@@ -78,14 +78,14 @@ const CreateInvoice = () => {
         const invoiceId = data.invoice.id;
         navigate(`/invoice/${invoiceId}`);
       })
-
       .catch((err) => {
-        if (err.response) {
-          console.error("Validation errors:", err.response.data.errors);
-        } else {
-          console.log("STATUS:", err.response?.status);
-          console.log("DATA:", err.response?.data);
-          console.log("ERRORS:", err.response?.data?.errors);
+        const response = err.response;
+        if (response && response.status === 422) {
+          setErrors(response.data.errors);
+          console.log(response.err.data);
+        }
+        if (response && response.status === 401) {
+          setErrors(response.data.errors);
         }
       });
   };
@@ -97,6 +97,13 @@ const CreateInvoice = () => {
         <div className="bg-blue-700 text-white px-6 py-4">
           <h1 className="text-2xl font-bold">CREATE INVOICE</h1>
         </div>
+        {errors && (
+          <div className="error-alert bg-red-500 text-white p-3 rounded">
+            {Object.keys(errors).map((key) => (
+              <p key={key}>{errors[key][0]}</p>
+            ))}
+          </div>
+        )}
 
         {/* Invoice Meta */}
         <div className="grid grid-cols-2 gap-6 px-6 py-4 text-sm">
