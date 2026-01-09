@@ -58,8 +58,14 @@ const Dashboard = () => {
                 <tr key={invoice.id} className="border-b last:border-0">
                   <td className="py-2">{invoice.id}</td>
                   <td>
-                    <span className="px-2 py-1 rounded bg-blue-100 text-blue-600 text-xs">
-                      {invoice.status}
+                    <span className="px-2 py-1 rounded  text-blue-600 text-xs">
+                      {invoice.status_id === 2 ? (
+                        <p>paid</p>
+                      ) : invoice.status_id === 3 ? (
+                        <p>overdue</p>
+                      ) : (
+                        <p>pending</p>
+                      )}
                     </span>
                   </td>
                   <td>${invoice.total.toFixed(2)}</td>

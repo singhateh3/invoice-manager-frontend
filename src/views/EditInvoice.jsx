@@ -4,8 +4,8 @@ import AxiosClient from "../axios-client";
 import { useNavigate, useParams } from "react-router-dom";
 import Spinner from "../components/Spinner";
 
-const EditInvoice = () => {
-  const { id } = useParams();
+const EditInvoice = ({ invoiceId, onClose, onUpdate }) => {
+  const id = invoiceId;
   const navigate = useNavigate();
 
   const [invoice, setInvoice] = useState(null);
@@ -97,8 +97,11 @@ const EditInvoice = () => {
     };
 
     AxiosClient.patch(`/invoice/${id}`, payload)
-      .then(() => navigate(`/invoice/${id}`))
-      .catch((err) => console.error(err));
+      .then(({ data }) => {
+        onUpdate?.(data.invoice); // update parent state
+        onClose(); // close modal
+      })
+      .catch(console.error);
   };
 
   if (loading) return <Spinner />;
@@ -108,8 +111,11 @@ const EditInvoice = () => {
       {/* Paper */}
       <div className="max-w-5xl mx-auto bg-white border shadow-sm">
         {/* Header Bar */}
-        <div className="bg-blue-700 text-white px-6 py-4">
-          <h1 className="text-2xl font-bold">CREATE INVOICE</h1>
+        <div className="bg-blue-700 text-white px-6 py-4 flex justify-between">
+          <h1 className="text-2xl font-bold">EDIT INVOICE</h1>
+          <button onClick={onClose} className="text-white text-xl">
+            ✕
+          </button>
         </div>
 
         {/* Invoice Meta */}

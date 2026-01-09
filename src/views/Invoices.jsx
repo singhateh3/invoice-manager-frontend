@@ -4,6 +4,11 @@ import { Link } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import Pagination from "../components/Pagination";
 import StatusDropdown from "../components/StatusDropdown";
+import Modal from "../components/Modal";
+import EditInvoice from "./EditInvoice";
+import editIcon from "../assets/images/pen.png";
+import viewIcon from "../assets/images/eye.png";
+import deleteIcon from "../assets/images/delete.png";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -11,6 +16,7 @@ const Invoices = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [postPerPage, setPostPerPage] = useState(10);
   const [lastPage, setLastPage] = useState(1);
+  const [editingInvoiceId, setEditingInvoiceId] = useState(null);
 
   const handleDelete = (id) => {
     AxiosClient.delete(`/invoice/${id}`)
@@ -43,6 +49,14 @@ const Invoices = () => {
   useEffect(() => {
     fetchInvoices();
   }, [currentPage]);
+
+  const handleStatusChange = (updatedInvoice) => {
+    setInvoices((prevInvoices) =>
+      prevInvoices.map((invoice) =>
+        invoice.id === updatedInvoice.id ? updatedInvoice : invoice
+      )
+    );
+  };
 
   if (loading) {
     return <Spinner />;
@@ -122,7 +136,7 @@ const Invoices = () => {
                         {/* Status Dropdown with badge style */}
                         <StatusDropdown
                           invoice={invoice}
-                          refreshInvoices={fetchInvoices}
+                          onStatusChange={handleStatusChange}
                         />
                       </td>
 
@@ -130,23 +144,35 @@ const Invoices = () => {
                         <div className="flex items-center justify-center gap-4">
                           <Link
                             to={`/invoice/${invoice.id}`}
-                            className="text-green-600 hover:underline font-medium"
+                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-green-50 transition"
                           >
-                            View
-                          </Link>
-
-                          <Link
-                            to={`/invoice/${invoice.id}/edit`}
-                            className="text-blue-600 hover:underline font-medium"
-                          >
-                            Edit
+                            <img
+                              src={viewIcon}
+                              alt="view"
+                              className="w-4 h-4 object-contain"
+                            />
                           </Link>
 
                           <button
-                            onClick={() => handleDelete(invoice.id)}
-                            className="text-red-600 hover:underline font-medium"
+                            onClick={() => setEditingInvoiceId(invoice.id)}
+                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-blue-50 transition"
                           >
-                            Delete
+                            <img
+                              src={editIcon}
+                              alt="Edit"
+                              className="w-4 h-4 object-contain"
+                            />
+                          </button>
+
+                          <button
+                            onClick={() => handleDelete(invoice.id)}
+                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-red-50 transition"
+                          >
+                            <img
+                              src={deleteIcon}
+                              alt="delete"
+                              className="w-4 h-4 object-contain"
+                            />
                           </button>
                         </div>
                       </td>
@@ -164,6 +190,21 @@ const Invoices = () => {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
+      {editingInvoiceId && (
+        <Modal onClose={() => setEditingInvoiceId(null)}>
+          <EditInvoice
+            invoiceId={editingInvoiceId}
+            onClose={() => setEditingInvoiceId(null)}
+            onUpdated={(updatedInvoice) =>
+              setInvoices((prev) =>
+                prev.map((inv) =>
+                  inv.id === updatedInvoice.id ? updatedInvoice : inv
+                )
+              )
+            }
+          />
+        </Modal>
+      )}
     </div>
   );
 };

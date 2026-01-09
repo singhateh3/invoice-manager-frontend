@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { data, Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useStateContext } from "../context/contextProvider";
 import AxiosClient from "../axios-client";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";

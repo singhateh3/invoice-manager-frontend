@@ -1,29 +1,38 @@
 import { useEffect, useState } from "react";
 import AxiosClient from "../axios-client";
 
-const StatusDropdown = ({ invoice, refreshInvoices }) => {
+const StatusDropdown = ({ invoice, onStatusChange }) => {
   const [statuses, setStatuses] = useState([]);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    AxiosClient.get("/statuses").then(({ data }) => setStatuses(data));
+    AxiosClient.get("/statuses")
+      .then(({ data }) => setStatuses(data))
+      .catch(console.error);
   }, []);
 
   const handleChange = (e) => {
-    const newStatus = e.target.value;
+    const newStatusName = e.target.value;
+
+    setUpdating(true);
+
     AxiosClient.patch(`/invoices/${invoice.id}/status`, {
-      status: newStatus,
+      status: newStatusName,
     })
-      .then(() => {
-        refreshInvoices();
+      .then(({ data }) => {
+        // send UPDATED invoice back to parent
+        onStatusChange(data.invoice);
       })
-      .catch(() => alert("Update failed"));
+      .catch(() => alert("Update failed"))
+      .finally(() => setUpdating(false));
   };
 
   return (
     <select
-      value={invoice.status?.name || ""}
+      value={invoice.status?.name}
       onChange={handleChange}
-      className="px-3 py-1 rounded-lg border text-sm"
+      disabled={updating}
+      className="px-3 py-1 rounded-lg border text-sm disabled:opacity-50"
     >
       {statuses.map((status) => (
         <option key={status.id} value={status.name}>
