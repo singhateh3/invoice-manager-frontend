@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
 import AxiosClient from "../axios-client";
 import Spinner from "../components/Spinner";
 import { useReactToPrint } from "react-to-print";
 
-const ShowInvoice = () => {
-  const { id } = useParams();
+const ShowInvoice = ({ invoiceId, onClose }) => {
+  const id = invoiceId;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,12 +32,18 @@ const ShowInvoice = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto bg-gray-50">
       {/* Print Button */}
-      <div className="text-right mb-4">
+      <div className="text-right mb-4 flex justify-between">
         <button
           className="rounded px-4 py-1 bg-gray-600 text-white hover:bg-gray-500"
           onClick={reactToPrintFn}
         >
           Print
+        </button>
+        <button
+          onClick={onClose}
+          className="text-black text-xl px-2 py-1 bg-red-600"
+        >
+          ✕
         </button>
       </div>
 

@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import AxiosClient from "../axios-client";
 import Spinner from "../components/Spinner";
 
-const ShowUser = () => {
-  const { id } = useParams();
+const ShowUser = ({ userId, onClose }) => {
+  const id = userId;
   const [user, setUser] = useState(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     AxiosClient.get(`/users/${id}`)
       .then(({ data }) => {
         setUser(data.user);
-        console.log(data.user);
+        console.log("FULL RESPONSE:", data);
       })
       .catch((error) => {
         console.error(error);
@@ -26,6 +28,12 @@ const ShowUser = () => {
 
   return (
     <div className="max-w-xl mx-auto bg-white p-6 rounded-lg shadow">
+      <button
+        onClick={onClose}
+        className="text-black text-xl px-2 py-1 bg-red-600"
+      >
+        ✕
+      </button>
       <h2 className="text-xl font-bold mb-4">User Details</h2>
 
       <div className="space-y-2">

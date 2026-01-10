@@ -8,7 +8,7 @@ const Modal = ({ children, onClose }) => {
       />
 
       {/* Modal content */}
-      <div className="relative bg-white w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded shadow-lg">
+      <div className="relative bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded shadow-lg">
         {children}
       </div>
     </div>

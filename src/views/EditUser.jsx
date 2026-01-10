@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from "react";
 import AxiosClient from "../axios-client";
-import { useNavigate, useParams } from "react-router-dom";
 import Spinner from "../components/Spinner";
 
-const EditUser = () => {
-  const { id } = useParams();
+const EditUser = ({ userId, onClose, onUpdate }) => {
+  const id = userId;
   const [Name, setName] = useState("");
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
   const [Password_confirmation, setPassword_confirmation] = useState("");
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
 
   // Fetch user data
+
   useEffect(() => {
-    setLoading(true);
     AxiosClient.get(`/users/${id}`)
       .then(({ data }) => {
         const user = data.user;
@@ -34,14 +32,17 @@ const EditUser = () => {
     const payload = {
       name: Name,
       email: Email,
-      password: Password,
-      password_confirmation: Password_confirmation,
     };
+    if (Password) {
+      payload.password = Password;
+      payload.password_confirmation = Password_confirmation;
+    }
 
     AxiosClient.put(`/users/${id}`, payload)
       .then(({ data }) => {
+        onUpdate?.(data.user);
+        onClose();
         console.log("User updated:", data);
-        navigate(`/users/${id}`);
       })
       .catch((err) => {
         if (err.response?.data?.errors) {
@@ -54,6 +55,12 @@ const EditUser = () => {
 
   return (
     <div className="max-w-md border-gray-100 border-2 shadow-lg p-4 mx-auto">
+      <button
+        onClick={onClose}
+        className="text-black text-xl px-2 py-1 bg-red-600"
+      >
+        ✕
+      </button>
       <form onSubmit={handleSubmit} className="space-y-4">
         <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
           Edit User

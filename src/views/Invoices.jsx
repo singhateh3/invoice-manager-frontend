@@ -9,6 +9,7 @@ import EditInvoice from "./EditInvoice";
 import editIcon from "../assets/images/pen.png";
 import viewIcon from "../assets/images/eye.png";
 import deleteIcon from "../assets/images/delete.png";
+import ShowInvoice from "./ShowInvoice";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -17,36 +18,42 @@ const Invoices = () => {
   const [postPerPage, setPostPerPage] = useState(10);
   const [lastPage, setLastPage] = useState(1);
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+  const [viewInvoiceId, setViewInvoiceId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
-  const handleDelete = (id) => {
-    AxiosClient.delete(`/invoice/${id}`)
+  const handleDelete = () => {
+    if (!invoiceToDelete) return;
+
+    AxiosClient.delete(`/invoice/${invoiceToDelete}`)
       .then(() => {
-        setInvoices((prev) => prev.filter((inv) => inv.id !== id));
+        setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceToDelete));
+        setShowDeleteModal(false);
+        setInvoiceToDelete(null);
       })
       .catch((err) => {
         console.error(err);
-        alert("failed to delete invoice");
+        alert("Failed to delete invoice");
       });
   };
-
-  const fetchInvoices = () => {
-    setLoading(true);
-
-    AxiosClient.get(`/invoice?page=${currentPage}`)
-      .then(({ data }) => {
-        const invoicesPagination = data.invoices;
-
-        setInvoices(invoicesPagination.data || []);
-        setLastPage(invoicesPagination.last_page || 1);
-        setPostPerPage(invoicesPagination.per_page || 10);
-      })
-      .catch((err) => {
-        console.error(err);
-      })
-      .finally(() => setLoading(false));
-  };
-
   useEffect(() => {
+    const fetchInvoices = () => {
+      setLoading(true);
+
+      AxiosClient.get(`/invoice?page=${currentPage}`)
+        .then(({ data }) => {
+          const invoicesPagination = data.invoices;
+
+          setInvoices(invoicesPagination.data || []);
+          setLastPage(invoicesPagination.last_page || 1);
+          setPostPerPage(invoicesPagination.per_page || 10);
+        })
+        .catch((err) => {
+          console.error(err);
+        })
+        .finally(() => setLoading(false));
+    };
+
     fetchInvoices();
   }, [currentPage]);
 
@@ -142,20 +149,20 @@ const Invoices = () => {
 
                       <td className="p-4">
                         <div className="flex items-center justify-center gap-4">
-                          <Link
-                            to={`/invoice/${invoice.id}`}
-                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-green-50 transition"
+                          <button
+                            onClick={() => setViewInvoiceId(invoice.id)}
+                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-green-50 transition border-2 p-2"
                           >
                             <img
                               src={viewIcon}
                               alt="view"
                               className="w-4 h-4 object-contain"
                             />
-                          </Link>
+                          </button>
 
                           <button
                             onClick={() => setEditingInvoiceId(invoice.id)}
-                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-blue-50 transition"
+                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-blue-50 transition border-2 p-2"
                           >
                             <img
                               src={editIcon}
@@ -165,8 +172,11 @@ const Invoices = () => {
                           </button>
 
                           <button
-                            onClick={() => handleDelete(invoice.id)}
-                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-red-50 transition"
+                            onClick={() => {
+                              setInvoiceToDelete(invoice.id);
+                              setShowDeleteModal(true);
+                            }}
+                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-red-50 transition border-2 p-2"
                           >
                             <img
                               src={deleteIcon}
@@ -204,6 +214,50 @@ const Invoices = () => {
             }
           />
         </Modal>
+      )}
+
+      {viewInvoiceId && (
+        <Modal onClose={() => setViewInvoiceId(null)}>
+          <ShowInvoice
+            invoiceId={viewInvoiceId}
+            onClose={() => setViewInvoiceId(null)}
+          />
+        </Modal>
+      )}
+
+      {/* show delete modal  */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-96 p-6">
+            <h2 className="text-lg font-semibold mb-4 text-red-600">
+              Confirm Delete
+            </h2>
+
+            <p className="mb-6">
+              Are you sure you want to delete this invoice? This action cannot
+              be undone.
+            </p>
+
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setInvoiceToDelete(null);
+                }}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
