@@ -13,6 +13,7 @@ import EditInvoice from "./views/EditInvoice";
 import AddUser from "./views/AddUser";
 import ShowUser from "./views/ShowUser";
 import EditUser from "./views/EditUser";
+import GuestInvoice from "./views/GuestInvoice";
 
 const router = createBrowserRouter([
   {
@@ -26,7 +27,7 @@ const router = createBrowserRouter([
       { path: "/users", element: <Users /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/new-invoice", element: <CreateInvoice /> },
-      { path: "/invoice/:id", element: <ShowInvoice /> },
+      { path: "/invoices/:id", element: <ShowInvoice /> },
       { path: "/invoice/:id/edit", element: <EditInvoice /> },
       { path: "/invoices", element: <Invoices /> },
       { path: "/add-user", element: <AddUser /> },
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/login", element: <Login /> },
       { path: "/signup", element: <Signup /> },
+      { path: "/guest", element: <GuestInvoice /> },
     ],
   },
   {

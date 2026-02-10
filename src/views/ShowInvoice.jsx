@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import AxiosClient from "../axios-client";
 import Spinner from "../components/Spinner";
 import { useReactToPrint } from "react-to-print";
 
-const ShowInvoice = ({ invoiceId, onClose }) => {
-  const id = invoiceId;
+const ShowInvoice = ({ invoiceId: propInvoiceId, onClose }) => {
+   const { id: paramInvoiceId } = useParams();
+  const invoiceId = propInvoiceId || paramInvoiceId;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -13,14 +16,13 @@ const ShowInvoice = ({ invoiceId, onClose }) => {
   const reactToPrintFn = useReactToPrint({ contentRef });
 
   useEffect(() => {
-    AxiosClient.get(`/invoice/${id}`)
-      .then(({ data }) => {
-        setData(data);
-        console.log(data);
-      })
+    if (!invoiceId) return;
+
+    AxiosClient.get(`/invoices/${invoiceId}`)
+      .then(({ data }) => setData(data))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [invoiceId]);
 
   // Guard before rendering
   if (loading) return <Spinner />;
